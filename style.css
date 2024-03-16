@@ -2,11 +2,19 @@
     width: 1880px;
     height: 920px;
     border: solid black;
+    display: flex;
+    flex-wrap: wrap;
 }
 
 .grid div {
     width: 40px;
     height: 40px;
-    border: solid darkred;
-    box-sizing: border-box;
+}
+
+.wall {
+    background-color: darkgreen;
+}
+
+.player {
+    background-color: firebrick;
 }
