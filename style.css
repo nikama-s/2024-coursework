@@ -1,12 +1,12 @@
 .grid {
-    width: 560px;
-    height: 560px;
+    width: 1880px;
+    height: 920px;
     border: solid black;
 }
 
 .grid div {
-    width: 20px;
-    height: 20px;
+    width: 40px;
+    height: 40px;
     border: solid darkred;
     box-sizing: border-box;
 }
