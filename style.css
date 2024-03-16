@@ -1,14 +1,14 @@
 .grid {
-    width: 1880px;
-    height: 920px;
+    width: 1890px;
+    height: 930px;
     border: solid black;
     display: flex;
     flex-wrap: wrap;
 }
 
 .grid div {
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
 }
 
 .wall {
