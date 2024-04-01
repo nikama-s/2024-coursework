@@ -5,7 +5,7 @@ canvas.width = 1900;
 canvas.height = 900;
 const scaledCanvas  = {
     width: canvas.width / 4,
-    height: canvas.height /4
+    height: canvas.height / 4
 }
 
 class Sprite {
@@ -28,8 +28,8 @@ class Sprite {
 class Player {
     constructor() {
         this.position = {
-            x: 0,
-            y: 0,
+            x: 170,
+            y: 200,
         }
         this.velocity = {
             x: 0,
@@ -67,10 +67,10 @@ const keys = {
 }
 const background = new Sprite({
         position: {
-            x: 0,
+            x: 140,
             y: 0,
         },
-        imageSrc: './img/background.png'
+        imageSrc: './img/room35x35.png'
     }
 )
 
@@ -80,8 +80,8 @@ function animate() {
     c.fillRect(0, 0, canvas.width, canvas.height);
 
     c.save();
-    c.scale(4,4);
-    c.translate(0, -background.image.height + scaledCanvas.height);
+    c.scale(1/2,1/2);
+   // c.translate(0, -background.image.height + scaledCanvas.height);
     background.update();
     c.restore();
     player.update();
