@@ -3,51 +3,31 @@ const c = canvas.getContext('2d');
 
 canvas.width = 1900;
 canvas.height = 900;
-const scaledCanvas  = {
+const scaledCanvas = {
     width: canvas.width / 4,
     height: canvas.height / 4
 }
 
-class Sprite {
-    constructor({position, imageSrc}) {
-        this.position = position;
-        this.image = new Image();
-        this.image.src = imageSrc;
-    }
-
-    draw() {
-        if (!this.image) return
-        c.drawImage(this.image, this.position.x, this.position.y);
-    }
-
-    update() {
-        this.draw()
-    }
+const wallCollisions2D = [];
+for (let i = 0; i < wallCollisions.length; i += 55) {
+    wallCollisions2D.push(wallCollisions.slice(i, i + 55));
 }
 
-class Player {
-    constructor() {
-        this.position = {
-            x: 170,
-            y: 200,
-        }
-        this.velocity = {
-            x: 0,
-            y: 0,
-        }
-    }
+const collisionBlocks = [];
 
-    draw() {
-        c.fillStyle = 'red';
-        c.fillRect(this.position.x, this.position.y, 40, 40);
-    }
-
-    update() {
-        this.draw();
-        this.position.x += this.velocity.x;
-        this.position.y += this.velocity.y;
-    }
-}
+wallCollisions2D.forEach((row, y) => {
+    row.forEach((symbol, x) => {
+        if (symbol === 1) {
+            collisionBlocks.push(new CollisionBlock({
+                position: {
+                    x: x * 32 + 70,
+                    y: y * 32,
+                }
+            }))
+        }
+    })
+})
+console.log(collisionBlocks);
 
 const player = new Player();
 
@@ -80,10 +60,14 @@ function animate() {
     c.fillRect(0, 0, canvas.width, canvas.height);
 
     c.save();
-    c.scale(1/2,1/2);
-   // c.translate(0, -background.image.height + scaledCanvas.height);
+    c.scale(1 / 2, 1 / 2);
+    // c.translate(0, -background.image.height + scaledCanvas.height);
     background.update();
     c.restore();
+
+    collisionBlocks.forEach(collisionBlock => {
+        collisionBlock.update();
+    })
     player.update();
     player.velocity.x = 0;
     player.velocity.y = 0;
