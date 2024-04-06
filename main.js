@@ -29,8 +29,13 @@ wallCollisions2D.forEach((row, y) => {
 })
 console.log(collisionBlocks);
 
-const player = new Player();
-
+const player = new Player({
+    position: {
+        x: 170,
+        y: 200,
+    },
+    collisionBlocks,
+});
 const keys = {
     d: {
         pressed: false,
