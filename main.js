@@ -32,9 +32,12 @@ console.log(collisionBlocks);
 const player = new Player({
     position: {
         x: 170,
-        y: 200,
+        y: 150,
     },
     collisionBlocks,
+    imageSrc:'./img/miner/idle.png',
+    frameRate: 5,
+    frameBuffer: 20,
 });
 const keys = {
     d: {
@@ -55,7 +58,7 @@ const background = new Sprite({
             x: 140,
             y: 0,
         },
-        imageSrc: './img/room35x35.png'
+        imageSrc: './img/room35x35.png',
     }
 )
 
