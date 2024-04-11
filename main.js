@@ -4,8 +4,8 @@ const c = canvas.getContext('2d');
 canvas.width = 1900;
 canvas.height = 900;
 const scaledCanvas = {
-    width: canvas.width / 4,
-    height: canvas.height / 4
+    width: canvas.width,
+    height: canvas.height,
 }
 
 const wallCollisions2D = [];
@@ -55,12 +55,20 @@ const keys = {
 }
 const background = new Sprite({
         position: {
-            x: 140,
+            x: 70,
             y: 0,
         },
         imageSrc: './img/room35x35.png',
-    }
+      scale: 1/2,
+    },
+
 )
+const camera = {
+    position: {
+        x: 0,
+        y: 0,
+    },
+}
 
 function animate() {
     window.requestAnimationFrame(animate);
@@ -68,10 +76,10 @@ function animate() {
     c.fillRect(0, 0, canvas.width, canvas.height);
 
     c.save();
-    c.scale(1 / 2, 1 / 2);
-    // c.translate(0, -background.image.height + scaledCanvas.height);
+   c.scale(1, 1);
+    c.translate(camera.position.x, camera.position.y);
     background.update();
-    c.restore();
+
 
     collisionBlocks.forEach(collisionBlock => {
         collisionBlock.update();
@@ -83,12 +91,19 @@ function animate() {
     if (keys.a.pressed) player.velocity.x = -1;
     if (keys.w.pressed) player.velocity.y = -1;
     if (keys.s.pressed) player.velocity.y = 1;
+    if (player.velocity.y < 0){
+        player.shouldPanCameraDown({camera, canvas});
+    }
+    else if(player.velocity.y > 0){
+        player.shouldPanCameraUp({camera, canvas});
+    }
+    c.restore();
 }
 
 animate();
 
 window.addEventListener('keydown', (event) => {
-    console.log(event);
+    //console.log(event);
     switch (event.keyCode) {
         case 68:
             keys.d.pressed = true;
@@ -105,7 +120,7 @@ window.addEventListener('keydown', (event) => {
     }
 });
 window.addEventListener('keyup', (event) => {
-    console.log(event);
+    //console.log(event);
     switch (event.keyCode) {
         case 68:
             keys.d.pressed = false;

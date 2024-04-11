@@ -9,17 +9,44 @@ class Player extends Sprite {
         this.collisionBlocks = collisionBlocks;
         this.hitbox = {
             position: {
-                 x: this.position.x,
-                 y: this.position.y,
+                x: this.position.x,
+                y: this.position.y,
             },
             width: 10,
             height: 10
 
         }
+        this.camerabox = {
+            position: {
+                x: this.position.x,
+                y: this.position.y,
+            },
+            width: 200,
+            height: 400,
+        }
     }
+
+    shouldPanCameraDown({canvas, camera}){
+        if (this.camerabox.position.y <= 0) return;
+        if(this.camerabox.position.y <= Math.abs(camera.position.y)){
+            camera.position.y -= this.velocity.y;
+        }
+    }
+    shouldPanCameraUp({canvas, camera}){
+        //if (this.camerabox.position.y <= 0) return;
+        if(this.camerabox.position.y + this.camerabox.height >= Math.abs(camera.position.y) + canvas.height){
+            camera.position.y -= this.velocity.y;
+        }
+    }
+
+
     update() {
         this.updateFrames();
         this.updateHitbox();
+        this.updateCamerabox();
+
+        c.fillStyle = 'rgba(0, 255, 0, 0.2)';
+        c.fillRect(this.camerabox.position.x, this.camerabox.position.y, this.camerabox.width, this.camerabox.height);
 
         c.fillStyle = 'rgba(0, 255, 0, 0.2)';
         c.fillRect(this.position.x, this.position.y, this.width, this.height);
@@ -35,35 +62,46 @@ class Player extends Sprite {
         this.updateHitbox();
         this.checkForVerticalCollisions();
     }
-updateHitbox(){
-    this.hitbox = {
-        position: {
-            x: this.position.x + 50,
-            y: this.position.y + 45,
-        },
-        width: 80,
-        height: 100
 
+    updateCamerabox() {
+        this.camerabox = {
+            position: {
+                x: this.position.x,
+                y: this.position.y - 100,
+            },
+            width: 200,
+            height: 400,
+        }
     }
-}
-    up
+
+    updateHitbox() {
+        this.hitbox = {
+            position: {
+                x: this.position.x + 50,
+                y: this.position.y + 45,
+            },
+            width: 80,
+            height: 100
+
+        }
+    }
+
     checkForHorizontalCollisions() {
-        for (let i = 0; i < this.collisionBlocks.length; i++){
+        for (let i = 0; i < this.collisionBlocks.length; i++) {
             const collisionBlock = this.collisionBlocks[i];
             if (
-                collision ({
-                    object1:this.hitbox,
+                collision({
+                    object1: this.hitbox,
                     object2: collisionBlock,
                 })
-            ){
-                if (this.velocity.x > 0 ) {
+            ) {
+                if (this.velocity.x > 0) {
                     this.velocity.x = 0;
-                    const offset = this.hitbox.position.x -  this.position.x + this.hitbox.width;
+                    const offset = this.hitbox.position.x - this.position.x + this.hitbox.width;
                     this.position.x = collisionBlock.position.x - 0.1 - offset;
                     break;
-                }
-                else if (this.velocity.x < 0 ) {
-                    const offset = this.hitbox.position.x - this.position.x ;
+                } else if (this.velocity.x < 0) {
+                    const offset = this.hitbox.position.x - this.position.x;
                     this.velocity.x = 0;
                     this.position.x = collisionBlock.position.x + collisionBlock.width + 0.1 - offset;
                     break;
@@ -71,28 +109,29 @@ updateHitbox(){
             }
         }
     }
+
     checkForVerticalCollisions() {
-        for (let i = 0; i < this.collisionBlocks.length; i++){
+        for (let i = 0; i < this.collisionBlocks.length; i++) {
             const collisionBlock = this.collisionBlocks[i];
             if (
-                collision ({
-                    object1:this.hitbox,
+                collision({
+                    object1: this.hitbox,
                     object2: collisionBlock,
                 })
-            ){
+            ) {
 
-                if (this.velocity.y > 0 ) {
+                if (this.velocity.y > 0) {
                     this.velocity.y = 0;
                     const offset = this.hitbox.position.y - this.position.y + this.hitbox.height;
                     this.position.y = collisionBlock.position.y - offset - 0.1;
                     break;
-                }
-                else if (this.velocity.y < 0 ) {
+                } else if (this.velocity.y < 0) {
                     this.velocity.y = 0;
-                    const offset = this.hitbox.position.y - this.position.y ;
+                    const offset = this.hitbox.position.y - this.position.y;
                     this.position.y = collisionBlock.position.y + collisionBlock.height + 0.1 - offset;
                     break;
+                }
             }
         }
     }
-}}
+}
