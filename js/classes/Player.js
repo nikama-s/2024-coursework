@@ -1,5 +1,5 @@
 class Player extends Sprite {
-    constructor({position, collisionBlocks, imageSrc, frameRate, frameBuffer, scale}) {
+    constructor({position, collisionBlocks, imageSrc, frameRate, frameBuffer, scale, animations}) {
         super({imageSrc, frameRate, frameBuffer, scale});
         this.position = position;
         this.velocity = {
@@ -24,6 +24,12 @@ class Player extends Sprite {
             width: 200,
             height: 400,
         }
+        this.animations = animations;
+        for (let key in this.animations ){
+            const image = new Image()
+            image.src = this.animations[key].imageSrc
+            this.animations[key].image = image
+        }
     }
 
     shouldPanCameraDown({canvas, camera}){
@@ -39,12 +45,19 @@ class Player extends Sprite {
         }
     }
 
+switchSprite(key){
+        if (this.image ===  this.animations[key] || !this.loaded) return
 
+        this.image = this.animations[key].image;
+    this.frameBuffer = this.animations[key].frameBuffer;
+    this.frameRate= this.animations[key].frameRate;
+
+}
     update() {
         this.updateFrames();
         this.updateHitbox();
         this.updateCamerabox();
-
+/*
         c.fillStyle = 'rgba(0, 255, 0, 0.2)';
         c.fillRect(this.camerabox.position.x, this.camerabox.position.y, this.camerabox.width, this.camerabox.height);
 
@@ -53,7 +66,7 @@ class Player extends Sprite {
 
         c.fillStyle = 'rgba(255, 0, 0, 0.2)';
         c.fillRect(this.hitbox.position.x, this.hitbox.position.y, this.hitbox.width, this.hitbox.height);
-
+*/
         this.draw();
         this.position.x += this.velocity.x;
         this.updateHitbox();

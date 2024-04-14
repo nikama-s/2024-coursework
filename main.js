@@ -35,10 +35,29 @@ const player = new Player({
         y: 150,
     },
     collisionBlocks,
-    imageSrc:'./img/miner/idle.png',
+    imageSrc: './img/miner/idle.png',
     frameRate: 5,
     frameBuffer: 20,
-});
+    animations: {
+        Idle: {
+            imageSrc: './img/miner/idle.png',
+            frameRate: 5,
+            image: new Image(),
+            frameBuffer: 20,
+        },
+        RunRight: {
+            imageSrc: './img/miner/RunR.png',
+            frameRate: 8,
+            frameBuffer: 20,
+        },
+        RunLeft: {
+            imageSrc: './img/miner/RunL.png',
+            frameRate: 8,
+            frameBuffer: 20,
+        },
+    }
+})
+;
 const keys = {
     d: {
         pressed: false,
@@ -59,9 +78,8 @@ const background = new Sprite({
             y: 0,
         },
         imageSrc: './img/room35x35.png',
-      scale: 1/2,
+        scale: 1 / 2,
     },
-
 )
 const camera = {
     position: {
@@ -76,27 +94,34 @@ function animate() {
     c.fillRect(0, 0, canvas.width, canvas.height);
 
     c.save();
-   c.scale(1, 1);
+    c.scale(1, 1);
     c.translate(camera.position.x, camera.position.y);
     background.update();
 
 
-    collisionBlocks.forEach(collisionBlock => {
+   /*collisionBlocks.forEach(collisionBlock => {
         collisionBlock.update();
-    })
+    })*/
     player.update();
     player.velocity.x = 0;
     player.velocity.y = 0;
-    if (keys.d.pressed) player.velocity.x = 1;
-    if (keys.a.pressed) player.velocity.x = -1;
-    if (keys.w.pressed) player.velocity.y = -1;
-    if (keys.s.pressed) player.velocity.y = 1;
-    if (player.velocity.y < 0){
-        player.shouldPanCameraDown({camera, canvas});
+    if (keys.d.pressed) {
+        player.switchSprite('RunRight')
+        player.velocity.x = 1;
     }
-    else if(player.velocity.y > 0){
+     if (keys.a.pressed) {player.velocity.x = -1;
+    player.switchSprite('RunLeft')}
+     if (keys.w.pressed) player.velocity.y = -1;
+     if (keys.s.pressed) player.velocity.y = 1;
+     if ( player.velocity.y === 0 && player.velocity.x === 0){
+        player.switchSprite('Idle')
+    }
+    if (player.velocity.y < 0) {
+        player.shouldPanCameraDown({camera, canvas});
+    } else if (player.velocity.y > 0) {
         player.shouldPanCameraUp({camera, canvas});
     }
+
     c.restore();
 }
 
