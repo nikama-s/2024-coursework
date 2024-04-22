@@ -1,1 +1,2 @@
-# 2024-coursework
+[Project preview](https://nikama-s.github.io/2024-coursework/)
+
