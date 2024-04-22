@@ -5,7 +5,7 @@ canvas.width = 1900;
 canvas.height = 930;
 let playerState = 'right';
 
-
+let ifIsInDialog = 0;
 const wallCollisions2D = [];
 for (let i = 0; i < wallCollisions.length; i += 55) {
     wallCollisions2D.push(wallCollisions.slice(i, i + 55));
@@ -129,7 +129,7 @@ function animate() {
 
     player.velocity.x = 0;
     player.velocity.y = 0;
-    if (!keys.e.pressed) {
+    if (ifIsInDialog === 0) {
         if (keys.d.pressed) {
             player.switchSprite('RunRight')
             playerState = 'right';
@@ -181,13 +181,14 @@ window.addEventListener('keydown', (event) => {
         switch (event.keyCode) {
             case 69:
                 player.interactionAsset.dialogueIndex++
-
+                keys.e.pressed = true
                 const { dialogueIndex, dialogue } = player.interactionAsset
                 if (dialogueIndex <= dialogue.length - 1) {
                     document.querySelector('#characterDialogueBox').innerHTML =
                         player.interactionAsset.dialogue[dialogueIndex]
                     return
                 }
+                ifIsInDialog = 0;
                 player.isInteracting = false
                 player.interactionAsset.dialogueIndex = 0
                 document.querySelector('#characterDialogueBox').style.display = 'none'
@@ -200,6 +201,7 @@ window.addEventListener('keydown', (event) => {
         case 69:
             keys.e.pressed = true
             if (!player.interactionAsset) return;
+            ifIsInDialog = 1;
             const firstMessage = player.interactionAsset.dialogue[0];
             document.querySelector('#characterDialogueBox').innerHTML = firstMessage;
             document.querySelector('#characterDialogueBox').style.display = 'flex';
