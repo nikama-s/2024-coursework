@@ -4,10 +4,7 @@ const c = canvas.getContext('2d');
 canvas.width = 1900;
 canvas.height = 930;
 let playerState = 'right';
-/*const scaledCanvas = {
-    width: canvas.width,
-    height: canvas.height,
-}*/
+
 
 const wallCollisions2D = [];
 for (let i = 0; i < wallCollisions.length; i += 55) {
@@ -94,6 +91,9 @@ const keys = {
     s: {
         pressed: false,
     },
+    e: {
+        pressed: false,
+    },
 }
 const background = new Sprite({
         position: {
@@ -125,52 +125,50 @@ function animate() {
         character.update();
     })
 
-    /*collisionBlocks.forEach(collisionBlock => {
-         collisionBlock.update();
-     })*/
     player.update();
 
     player.velocity.x = 0;
     player.velocity.y = 0;
-    if (keys.d.pressed) {
-        player.switchSprite('RunRight')
-        playerState = 'right';
-        player.velocity.x = 1;
-    }
-    if (keys.a.pressed) {
-        player.velocity.x = -1;
-        player.switchSprite('RunLeft')
-        playerState = 'left';
-    }
-    if (keys.w.pressed) {
-        if (playerState === 'right') {
+    if (!keys.e.pressed) {
+        if (keys.d.pressed) {
             player.switchSprite('RunRight')
-        } else {
+            playerState = 'right';
+            player.velocity.x = 1;
+        }
+        if (keys.a.pressed) {
+            player.velocity.x = -1;
             player.switchSprite('RunLeft')
+            playerState = 'left';
         }
-        player.velocity.y = -1;
-    }
-    if (keys.s.pressed) {
-        if (playerState === 'right') {
-            player.switchSprite('RunRight')
-        } else {
-            player.switchSprite('RunLeft')
+        if (keys.w.pressed) {
+            if (playerState === 'right') {
+                player.switchSprite('RunRight')
+            } else {
+                player.switchSprite('RunLeft')
+            }
+            player.velocity.y = -1;
         }
-        player.velocity.y = 1;
-    }
-    if (player.velocity.y === 0 && player.velocity.x === 0) {
-        if (playerState === 'right') {
-            player.switchSprite('Idle');
-        } else {
-            player.switchSprite('IdleL');
+        if (keys.s.pressed) {
+            if (playerState === 'right') {
+                player.switchSprite('RunRight')
+            } else {
+                player.switchSprite('RunLeft')
+            }
+            player.velocity.y = 1;
+        }
+        if (player.velocity.y === 0 && player.velocity.x === 0) {
+            if (playerState === 'right') {
+                player.switchSprite('Idle');
+            } else {
+                player.switchSprite('IdleL');
+            }
+        }
+        if (player.velocity.y < 0) {
+            player.shouldPanCameraDown({camera, canvas});
+        } else if (player.velocity.y > 0) {
+            player.shouldPanCameraUp({camera, canvas});
         }
     }
-    if (player.velocity.y < 0) {
-        player.shouldPanCameraDown({camera, canvas});
-    } else if (player.velocity.y > 0) {
-        player.shouldPanCameraUp({camera, canvas});
-    }
-
     playerInteractsWithCharacter(characters);
 
     c.restore();
@@ -179,9 +177,7 @@ function animate() {
 animate();
 
 window.addEventListener('keydown', (event) => {
-    //console.log(event);
     if (player.isInteracting) {
-        console.log('SFDGJHKHG');
         switch (event.keyCode) {
             case 69:
                 player.interactionAsset.dialogueIndex++
@@ -192,7 +188,6 @@ window.addEventListener('keydown', (event) => {
                         player.interactionAsset.dialogue[dialogueIndex]
                     return
                 }
-
                 player.isInteracting = false
                 player.interactionAsset.dialogueIndex = 0
                 document.querySelector('#characterDialogueBox').style.display = 'none'
@@ -203,6 +198,7 @@ window.addEventListener('keydown', (event) => {
     }
     switch (event.keyCode) {
         case 69:
+            keys.e.pressed = true
             if (!player.interactionAsset) return;
             const firstMessage = player.interactionAsset.dialogue[0];
             document.querySelector('#characterDialogueBox').innerHTML = firstMessage;
@@ -225,8 +221,10 @@ window.addEventListener('keydown', (event) => {
 });
 
 window.addEventListener('keyup', (event) => {
-    //console.log(event);
     switch (event.keyCode) {
+        case 69:
+            keys.e.pressed = false;
+            break;
         case 68:
             keys.d.pressed = false;
             break;

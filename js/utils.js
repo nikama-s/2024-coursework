@@ -18,5 +18,8 @@ function playerInteractsWithCharacter(characters) {
             player.interactionAsset = character;
             break;
         }
+        else {
+            player.interactionAsset = false;
+        }
     }
 }
