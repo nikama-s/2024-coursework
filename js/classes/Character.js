@@ -22,7 +22,6 @@ class Character extends Sprite {
         this.dialogueIndex = 0;
 
     }
-
     update() {
         this.updateFrames();
         this.draw();

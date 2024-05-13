@@ -1,100 +1,81 @@
 const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
 
-canvas.width = 1900;
-canvas.height = 930;
 let playerState = 'right';
 
-let ifIsInDialog = 0;
 const wallCollisions2D = [];
 for (let i = 0; i < wallCollisions.length; i += 55) {
     wallCollisions2D.push(wallCollisions.slice(i, i + 55));
 }
 const collisionBlocks = [];
 const characters = [];
-const hemlinImg = new Image()
-hemlinImg.src = './img/hemlin.png'
 
-wallCollisions2D.forEach((row, y) => {
-    row.forEach((symbol, x) => {
+const createCollisionBlock = (x, y) => new CollisionBlock({
+    position: {
+        x: x * 32 + 70,
+        y: y * 32,
+    }
+});
+
+const createHemlin = (x, y) => new Character({
+    position: {
+        x: x * 32,
+        y: y * 27,
+    },
+    imageSrc: './img/hemlin.png',
+    frameRate: 5,
+    frameBuffer: 100,
+    scale: 2 / 3,
+    dialogue: ["Hemlin — Hi there! I'm a mystical plant, that lives in this dungeon, my name is Hemlin", "Hemlin? What a strange name. How did you end up here", "Hemlin — Oh, it's a long story. In short, was captured and tortured for 200 years", "Hemlin — What's more important, i haven't drunk any water in 81 years, 9 month, 14 days, 5 hours, 42 minutes and 5 seconds... Could you bring me some?"]
+});
+
+let y = 0;
+for (const row of wallCollisions2D) {
+    let x = 0;
+    for (const symbol of row) {
         if (symbol === 1) {
-            collisionBlocks.push(new CollisionBlock({
-                position: {
-                    x: x * 32 + 70,
-                    y: y * 32,
-                }
-            }))
+            collisionBlocks.push(createCollisionBlock(x, y));
         } else if (symbol === 2) {
-            characters.push(
-                new Character({
-                    position: {
-                        x: x * 32,
-                        y: y * 27,
-                    },
-                    imageSrc: './img/hemlin.png',
-                    frameRate: 5,
-                    frameBuffer: 100,
-                    scale: 2 / 3,
-                    dialogue: ["Hemlin — Hi there! I'm a mystical plant, that lives in this dungeon, my name is Hemlin", "Hemlin? What a strange name. How did you end up here", "Hemlin — Oh, it's a long story. In short, was captured and tortured for 200 years", "Hemlin — What's more important, i haven't drunk any water in 81 years, 9 month, 14 days, 5 hours, 42 minutes and 5 seconds... Could you bring me some?"]
-                })
-            )
+            characters.push(createHemlin(x, y));
         }
-    })
-})
-console.log(characters)
-console.log(collisionBlocks);
+        x++;
+    }
+    y++;
+}
 
 const player = new Player({
-        position: {
-            x: 170,
-            y: 150,
-        },
-        collisionBlocks,
-        imageSrc: './img/miner/idle.png',
-        frameRate: 5,
-        frameBuffer: 20,
-        animations: {
-            Idle: {
-                imageSrc: './img/miner/idle.png',
-                frameRate: 5,
-                frameBuffer: 20,
-            },
-            RunRight: {
-                imageSrc: './img/miner/RunR.png',
-                frameRate: 8,
-                frameBuffer: 20,
-            },
-            RunLeft: {
-                imageSrc: './img/miner/RunL.png',
-                frameRate: 8,
-                frameBuffer: 20,
-            },
-            IdleL: {
-                imageSrc: './img/miner/idleL.png',
-                frameRate: 5,
-                frameBuffer: 20,
-            }
-        },
-        characters,
-    })
-;
-const keys = {
-    d: {
-        pressed: false,
+    position: {
+        x: 170,
+        y: 150,
     },
-    a: {
-        pressed: false,
+    collisionBlocks,
+    imageSrc: './img/miner/idle.png',
+    frameRate: 5,
+    frameBuffer: 20,
+    animations: {
+        Idle: createAnimation('./img/miner/idle.png', 5, 20),
+        RunR: createAnimation('./img/miner/RunR.png', 8, 20),
+        RunL: createAnimation('./img/miner/RunL.png', 8, 20),
+        IdleL: createAnimation('./img/miner/idleL.png', 5, 20),
     },
-    w: {
+    characters,
+});
+
+function createKey() {
+    return {
         pressed: false,
-    },
-    s: {
-        pressed: false,
-    },
-    e: {
-        pressed: false,
-    },
+    };
 }
+
+const keys = {
+    d: createKey(),
+    a: createKey(),
+    w: createKey(),
+    s: createKey(),
+    e: createKey(),
+};
+
+
 const background = new Sprite({
         position: {
             x: 70,
@@ -104,6 +85,7 @@ const background = new Sprite({
         scale: 1 / 2,
     },
 )
+
 const camera = {
     position: {
         x: 0,
@@ -115,47 +97,33 @@ function animate() {
     window.requestAnimationFrame(animate);
     c.fillStyle = 'black';
     c.fillRect(0, 0, canvas.width, canvas.height);
-
     c.save();
-    c.scale(1, 1);
     c.translate(camera.position.x, camera.position.y);
     background.update();
 
-    characters.forEach(character => {
+    for (const character of characters) {
         character.update();
-    })
-
+    }
     player.update();
 
     player.velocity.x = 0;
     player.velocity.y = 0;
-    if (ifIsInDialog === 0) {
+    if (!player.isInteracting) {
         if (keys.d.pressed) {
-            player.switchSprite('RunRight')
             playerState = 'right';
             player.velocity.x = 1;
         }
-        if (keys.a.pressed) {
+        else if (keys.a.pressed) {
             player.velocity.x = -1;
-            player.switchSprite('RunLeft')
             playerState = 'left';
         }
         if (keys.w.pressed) {
-            if (playerState === 'right') {
-                player.switchSprite('RunRight')
-            } else {
-                player.switchSprite('RunLeft')
-            }
             player.velocity.y = -1;
         }
-        if (keys.s.pressed) {
-            if (playerState === 'right') {
-                player.switchSprite('RunRight')
-            } else {
-                player.switchSprite('RunLeft')
-            }
+        else if (keys.s.pressed) {
             player.velocity.y = 1;
         }
+        player.switchSprite(`Run${playerState.charAt(0).toUpperCase()}`);
         if (player.velocity.y === 0 && player.velocity.x === 0) {
             if (playerState === 'right') {
                 player.switchSprite('Idle');
@@ -180,28 +148,24 @@ window.addEventListener('keydown', (event) => {
     if (player.isInteracting) {
         switch (event.keyCode) {
             case 69:
-                player.interactionAsset.dialogueIndex++
-                keys.e.pressed = true
-                const { dialogueIndex, dialogue } = player.interactionAsset
+                player.interactionAsset.dialogueIndex++;
+                keys.e.pressed = true;
+                const {dialogueIndex, dialogue} = player.interactionAsset;
                 if (dialogueIndex <= dialogue.length - 1) {
-                    document.querySelector('#characterDialogueBox').innerHTML =
-                        player.interactionAsset.dialogue[dialogueIndex]
-                    return
+                    document.querySelector('#characterDialogueBox').innerHTML = player.interactionAsset.dialogue[dialogueIndex];
+                    return;
                 }
-                ifIsInDialog = 0;
-                player.isInteracting = false
-                player.interactionAsset.dialogueIndex = 0
-                document.querySelector('#characterDialogueBox').style.display = 'none'
-
-                break
+                player.isInteracting = false;
+                player.interactionAsset.dialogueIndex = 0;
+                document.querySelector('#characterDialogueBox').style.display = 'none';
+                break;
         }
-        return
+        return;
     }
     switch (event.keyCode) {
         case 69:
             keys.e.pressed = true
             if (!player.interactionAsset) return;
-            ifIsInDialog = 1;
             const firstMessage = player.interactionAsset.dialogue[0];
             document.querySelector('#characterDialogueBox').innerHTML = firstMessage;
             document.querySelector('#characterDialogueBox').style.display = 'flex';

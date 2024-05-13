@@ -23,3 +23,11 @@ function playerInteractsWithCharacter(characters) {
         }
     }
 }
+
+function createAnimation(imageSrc, frameRate, frameBuffer) {
+    return {
+        imageSrc,
+        frameRate,
+        frameBuffer,
+    };
+}
