@@ -184,6 +184,7 @@ window.addEventListener('keydown', (event) => {
         case 'e':
             keys.e.pressed = true
             if (!player.interactionAsset) return;
+            switchPlayerToIdle();
             startConversation();
             break;
         case 'd':
