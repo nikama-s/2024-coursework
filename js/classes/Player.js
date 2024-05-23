@@ -2,140 +2,119 @@ class Player extends Sprite {
     constructor({position, collisionBlocks, imageSrc, frameRate, frameBuffer, scale, animations, characters}) {
         super({imageSrc, frameRate, frameBuffer, scale});
         this.position = position;
-        this.velocity = {
-            x: 0,
-            y: 0,
-        }
+        this.width = 100;
+        this.height = 100;
+        this.velocity = {x: 0, y: 0};
         this.collisionBlocks = collisionBlocks;
-        this.hitbox = {
-            position: {
-                x: this.position.x,
-                y: this.position.y,
-            },
-            width: 10,
-            height: 10
-
-        }
-        this.camerabox = {
-            position: {
-                x: this.position.x,
-                y: this.position.y,
-            },
-            width: 200,
-            height: 400,
-        }
-        this.animations = animations;
-        for (let key in this.animations) {
-            const image = new Image()
-            image.src = this.animations[key].imageSrc
-            this.animations[key].image = image
-        }
+        this.hitbox = createBox(this, 0, 0.1, 0.1);
+        this.camerabox = createBox(this,-100, 2, 2);
+        this.animations = this.loadAnimations(animations);
         this.characters = characters;
     }
 
-    shouldPanCameraDown({canvas, camera}) {
-        if (this.camerabox.position.y <= 0) return;
-        if (this.camerabox.position.y <= Math.abs(camera.position.y)) {
+    loadAnimations(animations) {
+        const loadedAnimations = {};
+        for (const key in animations) {
+            const animation = animations[key];
+            const image = new Image();
+            image.src = animation.imageSrc;
+            loadedAnimations[key] = {...animation, image};
+        }
+        return loadedAnimations;
+    }
+
+    shouldPanCameraDown({camera}) {
+        if (this.camerabox.position.y > 0 && this.camerabox.position.y <= Math.abs(camera.position.y)) {
             camera.position.y -= this.velocity.y;
         }
     }
 
     shouldPanCameraUp({canvas, camera}) {
-        if (this.camerabox.position.y + this.camerabox.height >= canvas.height * 2 - 65) return;
-        if (this.camerabox.position.y + this.camerabox.height >= Math.abs(camera.position.y) + canvas.height) {
+        const { position: { y: cameraY } } = camera;
+        const { position: { y: cameraBoxY }, height: cameraBoxHeight } = this.camerabox;
+
+        const maxY = canvas.height * 2 - 65;
+        const cameraTopY = cameraBoxY + cameraBoxHeight;
+
+        if (cameraTopY < maxY && cameraTopY >= Math.abs(cameraY) + canvas.height) {
             camera.position.y -= this.velocity.y;
         }
+
     }
 
     switchSprite(key) {
-        if (this.image === this.animations[key] || !this.loaded) return
-        this.image = this.animations[key].image;
-        this.frameBuffer = this.animations[key].frameBuffer;
-        this.frameRate = this.animations[key].frameRate;
-
+        if (this.image !== this.animations[key] && this.loaded) {
+            const { image, frameBuffer, frameRate } = this.animations[key];
+            this.image = image;
+            this.frameBuffer = frameBuffer;
+            this.frameRate = frameRate;
+        }
     }
 
     update() {
-        this.updateHitbox();
-        this.updateCamerabox();
+        this.updateHitBox();
+        this.updateCameraBox();
         this.draw();
+
         this.position.x += this.velocity.x;
-        this.updateHitbox();
+        this.updateHitBox();
         this.checkForHorizontalCollisions(this.collisionBlocks);
         this.checkForHorizontalCollisions(this.characters)
+
         this.position.y += this.velocity.y;
-        this.updateHitbox();
+        this.updateHitBox();
         this.checkForVerticalCollisions(this.collisionBlocks);
         this.checkForVerticalCollisions(this.characters);
     }
-
-    updateCamerabox() {
-        this.camerabox = {
-            position: {
-                x: this.position.x,
-                y: this.position.y - 100,
-            },
-            width: 200,
-            height: 400,
-        }
+    updateCameraBox() {
+        this.camerabox = createBox(this,-100, 2, 2);
     }
 
-    updateHitbox() {
-        this.hitbox = {
-            position: {
-                x: this.position.x + 50,
-                y: this.position.y + 45,
-            },
-            width: 80,
-            height: 100
-
-        }
+    updateHitBox() {
+        this.hitbox = createBox(this, 50, 0.4, 0.5);
     }
 
     checkForHorizontalCollisions(arr) {
-        for (let i = 0; i < arr.length; i++) {
-            const collisionBlock = arr[i];
-            if (
-                collision({
-                    object1: this.hitbox,
-                    object2: collisionBlock.hitbox,
-                })
-            ) {
+        for (const collisionBlock of arr) {
+            if (collision({ object1: this.hitbox, object2: collisionBlock.hitbox })) {
                 if (this.velocity.x > 0) {
-                    this.velocity.x = 0;
-                    const offset = this.hitbox.position.x - this.position.x + this.hitbox.width;
-                    this.position.x = collisionBlock.hitbox.position.x - 0.1 - offset;
-                    break;
+                    this.handleRightCollision(collisionBlock);
                 } else if (this.velocity.x < 0) {
-                    const offset = this.hitbox.position.x - this.position.x;
-                    this.velocity.x = 0;
-                    this.position.x = collisionBlock.hitbox.position.x + collisionBlock.hitbox.width + 0.1 - offset;
-                    break;
+                    this.handleLeftCollision(collisionBlock);
                 }
             }
         }
     }
+    handleRightCollision(collisionBlock) {
+        this.velocity.x = 0;
+        const offset = this.hitbox.position.x + this.hitbox.width - this.position.x;
+        this.position.x = collisionBlock.hitbox.position.x - offset - 0.1;
+    }
+    handleLeftCollision(collisionBlock) {
+        this.velocity.x = 0;
+        const offset = this.hitbox.position.x - this.position.x;
+        this.position.x = collisionBlock.hitbox.position.x + collisionBlock.hitbox.width + 0.1 - offset;
+    }
     checkForVerticalCollisions(arr) {
-        for (let i = 0; i < arr.length; i++) {
-            const collisionBlock = arr[i];
-            if (
-                collision({
-                    object1: this.hitbox,
-                    object2: collisionBlock.hitbox,
-                })
-            ) {
+        for (const collisionBlock of arr) {
+            if (collision({ object1: this.hitbox, object2: collisionBlock.hitbox })) {
                 if (this.velocity.y > 0) {
-                    this.velocity.y = 0;
-                    const offset = this.hitbox.position.y - this.position.y + this.hitbox.height;
-                    this.position.y = collisionBlock.hitbox.position.y - offset - 0.1;
-                    break;
+                    this.handleBottomCollision(collisionBlock);
                 } else if (this.velocity.y < 0) {
-                    const offset = this.hitbox.position.y - this.position.y;
-                    this.velocity.y = 0;
-                    this.position.y = collisionBlock.hitbox.position.y + collisionBlock.hitbox.height + 0.1 - offset;
-                    break;
+                    this.handleTopCollision(collisionBlock);
                 }
             }
         }
+    }
+    handleBottomCollision(collisionBlock) {
+        this.velocity.y = 0;
+        const offset = this.hitbox.position.y + this.hitbox.height - this.position.y;
+        this.position.y = collisionBlock.hitbox.position.y - offset - 0.1;
+    }
+
+    handleTopCollision(collisionBlock) {
+        this.velocity.y = 0;
+        const offset = this.hitbox.position.y - this.position.y;
+        this.position.y = collisionBlock.hitbox.position.y + collisionBlock.hitbox.height + 0.1 - offset;
     }
 }

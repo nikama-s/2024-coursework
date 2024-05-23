@@ -39,6 +39,8 @@ const createHemlin = (x, y) => new Character({
     frameRate: 5,
     frameBuffer: 100,
     scale: 2 / 3,
+    width: 100,
+    height: 100,
     dialogue: ["Hemlin — Hi there! I'm a mystical plant, that lives in this dungeon, my name is Hemlin", "Hemlin? What a strange name. How did you end up here", "Hemlin — Oh, it's a long story. In short, was captured and tortured for 200 years", "Hemlin — What's more important, i haven't drunk any water in 81 years, 9 month, 14 days, 5 hours, 42 minutes and 5 seconds... Could you bring me some?"]
 });
 

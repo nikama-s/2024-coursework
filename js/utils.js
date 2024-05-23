@@ -43,3 +43,15 @@ function getKey(keyCode){
             return 's';
     }
 }
+
+function createBox(object, offset = 0, scaleWidth = 1, scaleHeight = 1){
+    const { x, y } = object.position;
+    return {
+        position: {
+            x: x + offset,
+            y: y  + offset,
+        },
+        width: object.width * scaleWidth,
+        height: object.height * scaleHeight,
+    };
+}
