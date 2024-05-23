@@ -1,19 +1,32 @@
 const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
 
-let playerState = 'right';
+let playerState = 'Right';
 
 const wallCollisions2D = [];
-for (let i = 0; i < wallCollisions.length; i += 55) {
-    wallCollisions2D.push(wallCollisions.slice(i, i + 55));
+const rowSize = 55;
+
+for (let i = 0; i < wallCollisions.length; i += rowSize) {
+    wallCollisions2D.push(wallCollisions.slice(i, i + rowSize));
 }
 const collisionBlocks = [];
 const characters = [];
 
+const background = new Sprite({
+        position: {
+            x: 70,
+            y: 0,
+        },
+        imageSrc: './img/room35x35.png',
+        scale: 1 / 2,
+    },
+)
+
+const blockSize = 32;
 const createCollisionBlock = (x, y) => new CollisionBlock({
     position: {
-        x: x * 32 + 70,
-        y: y * 32,
+        x: x * blockSize + background.position.x,
+        y: y * blockSize,
     }
 });
 
@@ -53,10 +66,10 @@ const player = new Player({
     frameRate: 5,
     frameBuffer: 20,
     animations: {
-        Idle: createAnimation('./img/miner/idle.png', 5, 20),
-        RunR: createAnimation('./img/miner/RunR.png', 8, 20),
-        RunL: createAnimation('./img/miner/RunL.png', 8, 20),
-        IdleL: createAnimation('./img/miner/idleL.png', 5, 20),
+        IdleRight: createAnimation('./img/miner/idle.png', 5, 20),
+        RunRight: createAnimation('./img/miner/RunR.png', 8, 20),
+        RunLeft: createAnimation('./img/miner/RunL.png', 8, 20),
+        IdleLeft: createAnimation('./img/miner/idleL.png', 5, 20),
     },
     characters,
 });
@@ -75,22 +88,43 @@ const keys = {
     e: createKey(),
 };
 
-
-const background = new Sprite({
-        position: {
-            x: 70,
-            y: 0,
-        },
-        imageSrc: './img/room35x35.png',
-        scale: 1 / 2,
-    },
-)
-
 const camera = {
     position: {
         x: 0,
         y: 0,
     },
+}
+
+function movePlayer() {
+    if (keys.d.pressed) {
+        playerState = 'Right';
+        player.velocity.x = 1;
+    } else if (keys.a.pressed) {
+        player.velocity.x = -1;
+        playerState = 'Left';
+    }
+    if (keys.w.pressed) {
+        player.velocity.y = -1;
+    } else if (keys.s.pressed) {
+        player.velocity.y = 1;
+    }
+    player.switchSprite(`Run${playerState}`);
+}
+
+function switchPlayerToIdle() {
+    if (playerState === 'Right') {
+        player.switchSprite('IdleRight');
+    } else {
+        player.switchSprite('IdleLeft');
+    }
+}
+
+function handleCamera() {
+    if (player.velocity.y < 0) {
+        player.shouldPanCameraDown({camera, canvas});
+    } else if (player.velocity.y > 0) {
+        player.shouldPanCameraUp({camera, canvas});
+    }
 }
 
 function animate() {
@@ -109,33 +143,9 @@ function animate() {
     player.velocity.x = 0;
     player.velocity.y = 0;
     if (!player.isInteracting) {
-        if (keys.d.pressed) {
-            playerState = 'right';
-            player.velocity.x = 1;
-        }
-        else if (keys.a.pressed) {
-            player.velocity.x = -1;
-            playerState = 'left';
-        }
-        if (keys.w.pressed) {
-            player.velocity.y = -1;
-        }
-        else if (keys.s.pressed) {
-            player.velocity.y = 1;
-        }
-        player.switchSprite(`Run${playerState.charAt(0).toUpperCase()}`);
-        if (player.velocity.y === 0 && player.velocity.x === 0) {
-            if (playerState === 'right') {
-                player.switchSprite('Idle');
-            } else {
-                player.switchSprite('IdleL');
-            }
-        }
-        if (player.velocity.y < 0) {
-            player.shouldPanCameraDown({camera, canvas});
-        } else if (player.velocity.y > 0) {
-            player.shouldPanCameraUp({camera, canvas});
-        }
+        movePlayer();
+        if (player.velocity.y === 0 && player.velocity.x === 0) switchPlayerToIdle();
+        handleCamera();
     }
     playerInteractsWithCharacter(characters);
 
@@ -144,63 +154,69 @@ function animate() {
 
 animate();
 
+function startConversation() {
+    document.querySelector('#characterDialogueBox').innerHTML = player.interactionAsset.dialogue[0];
+    document.querySelector('#characterDialogueBox').style.display = 'flex';
+    player.isInteracting = true;
+}
+
+function continueConversation() {
+    player.interactionAsset.dialogueIndex++;
+    keys.e.pressed = true;
+    const {dialogueIndex, dialogue} = player.interactionAsset;
+    if (dialogueIndex <= dialogue.length - 1) {
+        document.querySelector('#characterDialogueBox').innerHTML = player.interactionAsset.dialogue[dialogueIndex];
+    } else {
+        player.isInteracting = false;
+        player.interactionAsset.dialogueIndex = 0;
+        document.querySelector('#characterDialogueBox').style.display = 'none';
+    }
+}
+
 window.addEventListener('keydown', (event) => {
-    if (player.isInteracting) {
-        switch (event.keyCode) {
-            case 69:
-                player.interactionAsset.dialogueIndex++;
-                keys.e.pressed = true;
-                const {dialogueIndex, dialogue} = player.interactionAsset;
-                if (dialogueIndex <= dialogue.length - 1) {
-                    document.querySelector('#characterDialogueBox').innerHTML = player.interactionAsset.dialogue[dialogueIndex];
-                    return;
-                }
-                player.isInteracting = false;
-                player.interactionAsset.dialogueIndex = 0;
-                document.querySelector('#characterDialogueBox').style.display = 'none';
-                break;
-        }
+    const key = getKey(event.keyCode);
+
+    if (player.isInteracting && key === 'e') {
+        continueConversation();
         return;
     }
-    switch (event.keyCode) {
-        case 69:
+    switch (key) {
+        case 'e':
             keys.e.pressed = true
             if (!player.interactionAsset) return;
-            const firstMessage = player.interactionAsset.dialogue[0];
-            document.querySelector('#characterDialogueBox').innerHTML = firstMessage;
-            document.querySelector('#characterDialogueBox').style.display = 'flex';
-            player.isInteracting = true;
+            startConversation();
             break;
-        case 68:
+        case 'd':
             keys.d.pressed = true;
             break;
-        case 65:
+        case 'a':
             keys.a.pressed = true;
             break;
-        case 87:
+        case 'w':
             keys.w.pressed = true;
             break;
-        case 83:
+        case 's':
             keys.s.pressed = true;
             break;
     }
 });
 
 window.addEventListener('keyup', (event) => {
-    switch (event.keyCode) {
-        case 69:
+    const key = getKey(event.keyCode);
+    switch (key) {
+        case 'e':
             keys.e.pressed = false;
             break;
-        case 68:
+        case 'd':
             keys.d.pressed = false;
             break;
-        case 65:
+        case 'a':
             keys.a.pressed = false;
             break;
-        case 87:
+        case 'w':
             keys.w.pressed = false;
             break;
-        case 83:
+        case 's':
             keys.s.pressed = false;
             break;
     }

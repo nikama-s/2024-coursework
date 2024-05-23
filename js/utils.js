@@ -31,3 +31,11 @@ function createAnimation(imageSrc, frameRate, frameBuffer) {
         frameBuffer,
     };
 }
+
+function getKey(keyCode){
+    if (keyCode === 69) return 'e';
+    else if (keyCode === 68) return 'd';
+    else if (keyCode === 65) return 'a';
+    else if (keyCode === 87) return 'w';
+    else if (keyCode === 83) return 's';
+}
