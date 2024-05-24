@@ -1,46 +1,52 @@
 class Sprite {
-    constructor({position, imageSrc, frameRate = 1, frameBuffer = 0, scale = 1, currentFrame = 0}) {
-        this.position = position;
-        this.scale = scale;
-        this.loaded = false;
-        this.image = new Image();
-        this.image.onload = () => {
-            this.width = (this.image.width/this.frameRate) * this.scale;
-            this.height = this.image.height * this.scale;
-            this.loaded = true;
-        }
-        this.image.src = imageSrc;
-        this.frameRate = frameRate;
-        this.currentFrame = 0;
-        this.frameBuffer = frameBuffer;
-        this.elapsedFrames = 0;
-    }
+  constructor ({ position, imageSrc, frameRate = 1, frameBuffer = 0, scale = 1 }) {
+    this.position = position;
+    this.scale = scale;
+    this.frameRate = frameRate;
+    this.frameBuffer = frameBuffer;
 
-    draw() {
-        if (!this.image) return;
-        this.updateFrames();
-        if (this.currentFrame > this.frameRate) this.currentFrame = 0;
-        const cropbox = {
-            position: {
-                x: this.currentFrame * (this.image.width / this.frameRate) ,
-                y: 0,
-            },
-            width: this.image.width / this.frameRate,
-            height: this.image.height,
-        }
-        c.drawImage(this.image, cropbox.position.x, cropbox.position.y, cropbox.width, cropbox.height, this.position.x, this.position.y, this.width, this.height);
-    }
+    this.currentFrame = 0;
+    this.elapsedFrames = 0;
 
-    update() {
-        this.draw()
+    this.loaded = false;
+    this.image = new Image();
+    this.image.onload = this.onImageLoad.bind(this);
+    this.image.src = imageSrc;
+  }
+
+  onImageLoad () {
+    this.width = (this.image.width / this.frameRate) * this.scale;
+    this.height = this.image.height * this.scale;
+    this.loaded = true;
+  }
+
+  draw () {
+    if (!this.loaded) return;
+    this.updateFrames();
+    if (this.currentFrame >= this.frameRate) this.currentFrame = 0;
+    const frameWidth = this.image.width / this.frameRate;
+
+    const cropBox = {
+      position: {
+        x: this.currentFrame * frameWidth,
+        y: 0
+      },
+      width: frameWidth,
+      height: this.image.height
+    };
+    c.drawImage(this.image, cropBox.position.x, cropBox.position.y, cropBox.width, cropBox.height, this.position.x, this.position.y, this.width, this.height);
+  }
+
+  update () {
+    this.draw();
+  }
+
+  updateFrames () {
+    this.elapsedFrames++;
+    if (this.elapsedFrames % this.frameBuffer === 0) {
+      if (this.currentFrame < this.frameRate - 1) {
+        this.currentFrame++;
+      } else this.currentFrame = 0;
     }
-    updateFrames(){
-        this.elapsedFrames++;
-        if (this.elapsedFrames % this.frameBuffer === 0){
-            if (this.currentFrame < this.frameRate - 1) {
-                this.currentFrame++;
-            }
-            else this.currentFrame = 0;
-        }
-    }
+  }
 }
