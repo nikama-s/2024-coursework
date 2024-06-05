@@ -77,48 +77,38 @@ class Player extends Sprite {
   checkForHorizontalCollisions (arr) {
     for (const collisionBlock of arr) {
       if (collision({ object1: this.hitbox, object2: collisionBlock.hitbox })) {
-        if (this.velocity.x > 0) {
-          this.handleRightCollision(collisionBlock);
-        } else if (this.velocity.x < 0) {
-          this.handleLeftCollision(collisionBlock);
-        }
+        this.handleHorizontalCollision(collisionBlock);
       }
     }
   }
 
-  handleRightCollision (collisionBlock) {
+  handleHorizontalCollision (collisionBlock) {
+    if (this.velocity.x > 0) {
+      const offset = this.hitbox.position.x + this.hitbox.width - this.position.x;
+      this.position.x = collisionBlock.hitbox.position.x - offset - 0.1;
+    } else if (this.velocity.x < 0) {
+      const offset = this.hitbox.position.x - this.position.x;
+      this.position.x = collisionBlock.hitbox.position.x + collisionBlock.hitbox.width + 0.1 - offset;
+    }
     this.velocity.x = 0;
-    const offset = this.hitbox.position.x + this.hitbox.width - this.position.x;
-    this.position.x = collisionBlock.hitbox.position.x - offset - 0.1;
-  }
-
-  handleLeftCollision (collisionBlock) {
-    this.velocity.x = 0;
-    const offset = this.hitbox.position.x - this.position.x;
-    this.position.x = collisionBlock.hitbox.position.x + collisionBlock.hitbox.width + 0.1 - offset;
   }
 
   checkForVerticalCollisions (arr) {
     for (const collisionBlock of arr) {
       if (collision({ object1: this.hitbox, object2: collisionBlock.hitbox })) {
-        if (this.velocity.y > 0) {
-          this.handleBottomCollision(collisionBlock);
-        } else if (this.velocity.y < 0) {
-          this.handleTopCollision(collisionBlock);
-        }
+        this.handleVerticalCollision(collisionBlock);
       }
     }
   }
 
-  handleBottomCollision (collisionBlock) {
+  handleVerticalCollision (collisionBlock) {
+    if (this.velocity.y > 0) {
+      const offset = this.hitbox.position.y + this.hitbox.height - this.position.y;
+      this.position.y = collisionBlock.hitbox.position.y - offset - 0.1;
+    } else if (this.velocity.y < 0) {
+      const offset = this.hitbox.position.y - this.position.y;
+      this.position.y = collisionBlock.hitbox.position.y + collisionBlock.hitbox.height + 0.1 - offset;
+    }
     this.velocity.y = 0;
-    const offset = this.hitbox.position.y + this.hitbox.height - this.position.y;
-    this.position.y = collisionBlock.hitbox.position.y - offset - 0.1;
-  }
-
-  handleTopCollision (collisionBlock) {
-    this.velocity.y = 0;
-    const offset = this.hitbox.position.y - this.position.y;
-    this.position.y = collisionBlock.hitbox.position.y + collisionBlock.hitbox.height + 0.1 - offset;
   }
 }

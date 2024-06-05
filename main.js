@@ -21,7 +21,6 @@ const background = new Sprite({
   scale: 1 / 2
 }
 );
-
 const blockSize = 32;
 const createCollisionBlock = (x, y) => new CollisionBlock({
   position: {
